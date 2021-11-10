@@ -11,13 +11,11 @@ locals {
     content : v
     }
   ]
-  /*
   sync = [for v in data.kubectl_file_documents.sync.documents : {
     data : yamldecode(v)
     content : v
     }
   ]
-  */
 }
 
 /*
@@ -38,7 +36,6 @@ resource "kubectl_manifest" "install" {
   yaml_body  = each.value
 }
 
-/*
 resource "kubectl_manifest" "sync" {
   for_each   = { for v in local.sync : lower(join("/", compact([v.data.apiVersion, v.data.kind, lookup(v.data.metadata, "namespace", ""), v.data.metadata.name]))) => v.content }
   depends_on = [kubernetes_namespace.flux_system]
@@ -59,8 +56,7 @@ resource "kubernetes_secret" "main" {
     known_hosts    = local.known_hosts
   }
 }
-*/
-/*
+
 # GitHub
 resource "github_repository" "main" {
   name       = var.repository_name
@@ -100,4 +96,3 @@ resource "github_repository_file" "kustomize" {
   content    = data.flux_sync.main.kustomize_content
   branch     = var.branch
 }
-*/
