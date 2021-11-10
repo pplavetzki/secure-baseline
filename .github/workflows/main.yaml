@@ -182,7 +182,7 @@ jobs:
           OVERRIDES: overrides.tfvars
         run: |
           source /tmp/$SECRETS
-          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/08-GitOps-flux
+          make tf-plan TF_DIR=./terraform/08-GitOps-flux
 
       - name: Terraform Apply 08-GitOps-flux
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
