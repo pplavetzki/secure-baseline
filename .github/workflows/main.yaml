@@ -1,0 +1,191 @@
+name: Workflows with large secrets
+
+on: [push, workflow_dispatch]
+
+jobs:
+  terraform-hub-and-landingzone:
+    name: Terraform Hub and LZ
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SECRETS: ".coe-env"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Decrypt secret
+        shell: bash
+        run: |
+          GPG_PASSPHRASE=$PASSPHRASE SECRETS=$SECRETS make decrypt
+        env:
+          PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
+      # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+      - name: Setup Terraform
+        run: |
+          make tf-install
+      # Initialize the TF working directory.
+      # Change the backend-config variables to match the storage account used for your deployments.
+      - name: Terraform Init 04-Network-Hub
+        run: |
+          source /tmp/$SECRETS
+          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/04-Network-Hub
+      # Generates an execution plan for Terraform
+      - name: Terraform Plan 04-Network-Hub
+        env:
+          OVERRIDES: overrides.tfvars
+        run: |
+          source /tmp/$SECRETS
+          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/04-Network-Hub
+
+        # On push to main, build or change infrastructure according to Terraform configuration files
+        # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+      - name: Terraform Apply 04-Network-Hub
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          source /tmp/$SECRETS
+          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/04-Network-Hub
+      
+      # Change the backend-config variables to match the storage account used for your deployments.
+      - name: Terraform Init 05-Network-LZ
+        run: |
+          source /tmp/$SECRETS
+          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/05-Network-LZ
+
+      - name: Terraform Plan 05-Network-LZ
+        env:
+          OVERRIDES: overrides.tfvars
+        run: |
+          source /tmp/$SECRETS
+          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/05-Network-LZ
+
+    
+      - name: Terraform Apply 05-Network-LZ
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          source /tmp/$SECRETS
+          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/05-Network-LZ
+
+      # Change the backend-config variables to match the storage account used for your deployments.
+      - name: Terraform Init 06-AKS-supporting
+        run: |
+          source /tmp/$SECRETS
+          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/06-AKS-supporting
+
+      - name: Terraform Plan 06-AKS-supporting
+        env:
+          OVERRIDES: overrides.tfvars
+        run: |
+          source /tmp/$SECRETS
+          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/06-AKS-supporting
+    
+      - name: Terraform Apply 06-AKS-supporting
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          source /tmp/$SECRETS
+          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/06-AKS-supporting
+
+  terraform-AKS:
+    name: Terraform-AKS
+    needs: terraform-hub-and-landingzone
+    env:
+      SECRETS: ".coe-env"
+    runs-on: ubuntu-latest
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt secret
+        shell: bash
+        run: |
+          GPG_PASSPHRASE=$PASSPHRASE SECRETS=$SECRETS make decrypt
+        env:
+          PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
+
+      # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+      - name: Setup Terraform
+        run: |
+          make tf-install
+
+      # Initialize the TF working directory.
+      # Change the backend-config variables to match the storage account used for your deployments.
+      - name: Terraform Init 07-AKS-cluster
+        run: |
+          source /tmp/$SECRETS
+          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster
+      
+      # # Generates an execution plan for Terraform
+      - name: Terraform Plan 07-AKS-cluster
+        env:
+          OVERRIDES: overrides.tfvars
+        run: |
+          source /tmp/$SECRETS
+          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster
+
+        # On push to main, build or change infrastructure according to Terraform configuration files
+        # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+      - name: Terraform Apply 07-AKS-cluster
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          source /tmp/$SECRETS
+          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster
+
+  terraform-GitOps:
+    name: Terraform-GitOps
+    needs: terraform-AKS
+    env:
+      SECRETS: ".coe-env"
+    runs-on: ubuntu-latest
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt secret
+        shell: bash
+        run: |
+          GPG_PASSPHRASE=$PASSPHRASE SECRETS=$SECRETS make decrypt
+        env:
+          PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
+
+      # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+      - name: Setup Terraform
+        run: |
+          make tf-install
+
+      - name: Get KubeConfig
+        run: |
+          source /tmp/$SECRETS
+          make TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster KUBE_PATH=$KUBECONFIG aks-credentials
+
+      # Initialize the TF working directory.
+      # Change the backend-config variables to match the storage account used for your deployments.
+      - name: Terraform Init 08-GitOps-flux
+        run: |
+          source /tmp/$SECRETS
+          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/08-GitOps-flux
+
+      - name: Terraform Plan 08-GitOps-flux
+        env:
+          OVERRIDES: overrides.tfvars
+        run: |
+          source /tmp/$SECRETS
+          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/08-GitOps-flux
+
+      - name: Terraform Apply 08-GitOps-flux
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          source /tmp/$SECRETS
+          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/08-GitOps-flux

@@ -1,0 +1,57 @@
+name: 'Terraform_AAD'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: 'Terraform_AAD'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SECRETS: ".coe-env"
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Decrypt secret
+      run: |
+        GPG_PASSPHRASE=$PASSPHRASE SECRETS=$SECRETS make decrypt
+      env:
+        PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      run: |
+        make tf-install
+
+    # Initialize the TF working directory.
+    # Change the backend-config variables to match the storage account used for your deployments.
+    ####### IMPORTANT: if you are using importing already exisiting user groups, use the 03-AAD-import folder instead ######
+    - name: Terraform Init 03-AAD
+      run: |
+        source /tmp/$SECRETS
+        make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/03-AAD-import
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan 03-AAD
+      env:
+        OVERRIDES: overrides.tfvars
+      run: |
+        source /tmp/$SECRETS
+        make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/03-AAD-import
+
+      # On push to main, build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Apply 03-AAD
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        source /tmp/$SECRETS
+        make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/03-AAD-import
