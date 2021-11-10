@@ -1,4 +1,4 @@
-name: Workflows with large secrets
+name: Infrastructure Deployment Secure Baseline
 
 on: [push, workflow_dispatch]
 
@@ -26,14 +26,14 @@ jobs:
       - name: Terraform Init 04-Network-Hub
         run: |
           source /tmp/$SECRETS
-          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/04-Network-Hub
+          make tf-init TF_DIR=./terraform/04-Network-Hub
       # Generates an execution plan for Terraform
       - name: Terraform Plan 04-Network-Hub
         env:
           OVERRIDES: overrides.tfvars
         run: |
           source /tmp/$SECRETS
-          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/04-Network-Hub
+          make tf-plan TF_DIR=./terraform/04-Network-Hub
 
         # On push to main, build or change infrastructure according to Terraform configuration files
         # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
@@ -41,46 +41,46 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           source /tmp/$SECRETS
-          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/04-Network-Hub
+          make tf-apply TF_DIR=./terraform/04-Network-Hub
       
       # Change the backend-config variables to match the storage account used for your deployments.
       - name: Terraform Init 05-Network-LZ
         run: |
           source /tmp/$SECRETS
-          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/05-Network-LZ
+          make tf-init TF_DIR=./terraform/05-Network-LZ
 
       - name: Terraform Plan 05-Network-LZ
         env:
           OVERRIDES: overrides.tfvars
         run: |
           source /tmp/$SECRETS
-          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/05-Network-LZ
+          make tf-plan TF_DIR=./terraform/05-Network-LZ
 
     
       - name: Terraform Apply 05-Network-LZ
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           source /tmp/$SECRETS
-          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/05-Network-LZ
+          make tf-apply TF_DIR=./terraform/05-Network-LZ
 
       # Change the backend-config variables to match the storage account used for your deployments.
       - name: Terraform Init 06-AKS-supporting
         run: |
           source /tmp/$SECRETS
-          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/06-AKS-supporting
+          make tf-init TF_DIR=./terraform/06-AKS-supporting
 
       - name: Terraform Plan 06-AKS-supporting
         env:
           OVERRIDES: overrides.tfvars
         run: |
           source /tmp/$SECRETS
-          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/06-AKS-supporting
+          make tf-plan TF_DIR=./terraform/06-AKS-supporting
     
       - name: Terraform Apply 06-AKS-supporting
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           source /tmp/$SECRETS
-          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/06-AKS-supporting
+          make tf-apply TF_DIR=./terraform/06-AKS-supporting
 
   terraform-AKS:
     name: Terraform-AKS
@@ -117,7 +117,7 @@ jobs:
       - name: Terraform Init 07-AKS-cluster
         run: |
           source /tmp/$SECRETS
-          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster
+          make tf-init TF_DIR=./terraform/07-AKS-cluster
       
       # # Generates an execution plan for Terraform
       - name: Terraform Plan 07-AKS-cluster
@@ -125,7 +125,7 @@ jobs:
           OVERRIDES: overrides.tfvars
         run: |
           source /tmp/$SECRETS
-          make tf-plan TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster
+          make tf-plan TF_DIR=./terraform/07-AKS-cluster
 
         # On push to main, build or change infrastructure according to Terraform configuration files
         # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
@@ -133,7 +133,7 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           source /tmp/$SECRETS
-          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster
+          make tf-apply TF_DIR=./terraform/07-AKS-cluster
 
   terraform-GitOps:
     name: Terraform-GitOps
@@ -168,14 +168,14 @@ jobs:
       - name: Get KubeConfig
         run: |
           source /tmp/$SECRETS
-          make TF_DIR=./Scenarios/Secure-Baseline/Terraform/07-AKS-cluster KUBE_PATH=$KUBECONFIG aks-credentials
+          make TF_DIR=./terraform/07-AKS-cluster KUBE_PATH=$KUBECONFIG aks-credentials
 
       # Initialize the TF working directory.
       # Change the backend-config variables to match the storage account used for your deployments.
       - name: Terraform Init 08-GitOps-flux
         run: |
           source /tmp/$SECRETS
-          make tf-init TF_DIR=./Scenarios/Secure-Baseline/Terraform/08-GitOps-flux
+          make tf-init TF_DIR=./terraform/08-GitOps-flux
 
       - name: Terraform Plan 08-GitOps-flux
         env:
@@ -188,4 +188,4 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           source /tmp/$SECRETS
-          make tf-apply TF_DIR=./Scenarios/Secure-Baseline/Terraform/08-GitOps-flux
+          make tf-apply TF_DIR=./terraform/08-GitOps-flux
