@@ -8,7 +8,7 @@ spec:
   targetNamespace: kube-system
   chart:
     spec:
-      chart: csi-secrets-store-provider-azure/csi-secrets-store-provider-azure
+      chart: csi-secrets-store-provider-azure
       sourceRef:
         kind: HelmRepository
         name: csi-secrets-store-provider-azure
