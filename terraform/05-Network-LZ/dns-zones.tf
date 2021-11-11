@@ -37,6 +37,13 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lz_kv" {
   virtual_network_id    = azurerm_virtual_network.vnet.id
 }
 
+resource "azurerm_private_dns_zone_virtual_network_link" "hub_kv" {
+  name                  = "hub_to_kvs"
+  resource_group_name   = data.terraform_remote_state.existing-hub.outputs.hub_rg_name
+  private_dns_zone_name = azurerm_private_dns_zone.kv-dns.name
+  virtual_network_id    = data.terraform_remote_state.existing-hub.outputs.hub_vnet_id
+}
+
 output "kv_private_zone_id" {
   value = azurerm_private_dns_zone.kv-dns.id
 }
