@@ -5,6 +5,7 @@ metadata:
   name: csi
 spec:
   releaseName: csi
+  targetNamespace: kube-system
   chart:
     spec:
       chart: csi-secrets-store-provider-azure/csi-secrets-store-provider-azure
