@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - sources
   - aks-keyvault-provider
+  - aad-pod-identity
