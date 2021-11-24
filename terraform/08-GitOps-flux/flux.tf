@@ -73,12 +73,12 @@ resource "github_branch_default" "main" {
   branch     = var.branch
 }
 
-resource "github_repository_deploy_key" "main" {
-  title      = "staging-cluster"
-  repository = github_repository.main.name
-  key        = tls_private_key.main.public_key_openssh
-  read_only  = true
-}
+# resource "github_repository_deploy_key" "main" {
+#   title      = "staging-cluster"
+#   repository = github_repository.main.name
+#   key        = tls_private_key.main.public_key_openssh
+#   read_only  = true
+# }
 
 resource "github_repository_file" "install" {
   repository = github_repository.main.name
