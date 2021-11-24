@@ -11,7 +11,7 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
   dns_prefix          = var.prefix
   location            = var.location
   resource_group_name = var.resource_group_name
-  kubernetes_version = "1.21.1"
+  kubernetes_version = "1.21.2"
 
   addon_profile {
     oms_agent {
@@ -25,12 +25,14 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
   }
 
   default_node_pool {
-    name            = "defaultpool"
-    vm_size         = "Standard_DS2_v2"
+    name            = "system"
+    vm_size         = "Standard_D4_v2" # "Standard_DS2_v2"
     os_disk_size_gb = 30
     type            = "VirtualMachineScaleSets"
     node_count = 3
     vnet_subnet_id = var.vnet_subnet_id
+    availability_zones = [ "1", "2", "3" ]
+    only_critical_addons_enabled = true
   }
 
   network_profile {
@@ -40,7 +42,6 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
     dns_service_ip = "192.168.100.10"
     service_cidr = "192.168.100.0/24"
     docker_bridge_cidr = "172.17.0.1/16"
-
   }
 
   role_based_access_control {
@@ -55,6 +56,28 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
   identity {
     type                      = "UserAssigned"
     user_assigned_identity_id = var.mi_aks_cp_id
+  }
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "apps" {
+  name                  = "apps"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.akscluster.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 3
+  vnet_subnet_id        = var.vnet_subnet_id
+  availability_zones = [ "1", "2", "3" ]
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "utilz" {
+  name                  = "utilz"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.akscluster.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 3
+  vnet_subnet_id        = var.vnet_subnet_id
+  availability_zones = [ "1", "2", "3" ]
+  node_taints = [ "dedicated=utilz:NoSchedule" ]
+  node_labels = {
+    "dedicated": "utilz"
   }
 }
 
