@@ -58,3 +58,4 @@ guard-%:
 	fi
 
 .PHONY: arc-install arc-delete encrypt decrypt az-login tf-install tf-init tf-plan tf-apply aks-credentials
+
