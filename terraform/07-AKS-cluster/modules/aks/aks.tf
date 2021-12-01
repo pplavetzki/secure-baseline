@@ -26,13 +26,14 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
 
   default_node_pool {
     name            = "system"
-    vm_size         = "Standard_D4_v2" # "Standard_DS2_v2"
+    vm_size         = "Standard_DS2_v2" # "Standard_D4_v2"
     os_disk_size_gb = 30
     type            = "VirtualMachineScaleSets"
     node_count = 3
     vnet_subnet_id = var.vnet_subnet_id
-    availability_zones = [ "1", "2", "3" ]
-    only_critical_addons_enabled = true
+    availability_zones = [ "1" ]
+    # availability_zones = [ "1", "2", "3" ]
+    # only_critical_addons_enabled = true
   }
 
   network_profile {
@@ -59,27 +60,27 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
   }
 }
 
-resource "azurerm_kubernetes_cluster_node_pool" "apps" {
-  name                  = "apps"
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.akscluster.id
-  vm_size               = "Standard_DS2_v2"
-  node_count            = 3
-  vnet_subnet_id        = var.vnet_subnet_id
-  availability_zones = [ "1", "2", "3" ]
-}
+# resource "azurerm_kubernetes_cluster_node_pool" "apps" {
+#   name                  = "apps"
+#   kubernetes_cluster_id = azurerm_kubernetes_cluster.akscluster.id
+#   vm_size               = "Standard_DS2_v2"
+#   node_count            = 3
+#   vnet_subnet_id        = var.vnet_subnet_id
+#   availability_zones = [ "1", "2", "3" ]
+# }
 
-resource "azurerm_kubernetes_cluster_node_pool" "utilz" {
-  name                  = "utilz"
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.akscluster.id
-  vm_size               = "Standard_DS2_v2"
-  node_count            = 3
-  vnet_subnet_id        = var.vnet_subnet_id
-  availability_zones = [ "1", "2", "3" ]
-  node_taints = [ "dedicated=utilz:NoSchedule" ]
-  node_labels = {
-    "dedicated": "utilz"
-  }
-}
+# resource "azurerm_kubernetes_cluster_node_pool" "utilz" {
+#   name                  = "utilz"
+#   kubernetes_cluster_id = azurerm_kubernetes_cluster.akscluster.id
+#   vm_size               = "Standard_DS2_v2"
+#   node_count            = 3
+#   vnet_subnet_id        = var.vnet_subnet_id
+#   availability_zones = [ "1", "2", "3" ]
+#   node_taints = [ "dedicated=utilz:NoSchedule" ]
+#   node_labels = {
+#     "dedicated": "utilz"
+#   }
+# }
 
 output "aks_id" {
   value = azurerm_kubernetes_cluster.akscluster.id
