@@ -137,7 +137,7 @@ jobs:
 
   terraform-GitOps:
     name: Terraform-GitOps
-    # needs: terraform-AKS
+    needs: terraform-AKS
     env:
       SECRETS: ".coe-env"
     runs-on: ubuntu-latest
