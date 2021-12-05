@@ -14,6 +14,10 @@ variable "net_plugin" {
     default = "azure"  #Options are "azure" or "kubenet"
 }
 
+variable "net_policy" {
+    default = "calico"
+}
+
 
 
 
