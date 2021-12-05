@@ -22,6 +22,10 @@ variable "net_plugin" {
   
 }
 
+variable "net_policy" {
+    default = "calico"
+}
+
 # variable "mi_aks_kubelet_id" {
   
 # }
