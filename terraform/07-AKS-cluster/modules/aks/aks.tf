@@ -37,7 +37,7 @@ resource "azurerm_kubernetes_cluster" "akscluster" {
   }
 
   network_profile {
-    network_network_policy = var.net_policy
+    network_policy = var.net_policy
     network_plugin = var.net_plugin
     outbound_type = "userDefinedRouting"
     dns_service_ip = "192.168.100.10"
